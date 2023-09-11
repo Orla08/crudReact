@@ -97,7 +97,7 @@ function App() {
 
   return (
     <div className="container mt-5">
-     <h1>Tareas</h1><hr/>
+     <h1>Tareas de:  Orlando De La Hoz</h1><hr/>
      <div className="row"> 
       <div className="col-8">
         <h4 className="text-center">Lista de Tareas</h4>
