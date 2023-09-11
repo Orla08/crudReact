@@ -5,16 +5,31 @@ import shortid from 'shortid';
 function App() {
    const [task, setTask] = useState(''); 
    const [tasks, setTasks] = useState([]); 
-   const [editMode, setEditMode] = useState(false);
    const [id, setId] = useState('');
+   const [editMode, setEditMode] = useState(false);
+   const [error, setError] = useState(null)
+
+
+   const validForm = ()=> {
+    let isValid = true;
+    setError(null)
+
+    if (isEmpty(task)){
+      setError('Debes ingresar una tarea')
+      isValid = false;
+    }
+      return isValid //Esta funcion devulve falso o verdadero si mandas el task vacio
+      //Si devuelve falso es que hay errores
+   }
 
 
   const addTask = (e) => {
     e.preventDefault()
-    if (isEmpty(task)){
-      console.log('Task vacio')
+
+    if (!validForm()){ 
       return
-    }
+    }     
+
     const newTask = { //Nueva task
       id : shortid.generate(), //Generamos un id AlfaNumerico
       name : task, //Tendra un parametro task que sera al igual que el state task
@@ -25,10 +40,9 @@ function App() {
 
   const saveTask = (e) => {
     e.preventDefault()
-    if (isEmpty(task)){
-      console.log('Task vacio')
+    if (!validForm()){ 
       return
-    }
+    }   
 
     const editTasks = tasks.map(item => item.id === id ? {id, name: task} : item)
     //mapeamos el array de taks y preguntamos que si el id es igual al id que se guardo al presionar editar
@@ -60,7 +74,7 @@ function App() {
         <h4 className="text-center">Lista de Tareas</h4>
         {
           tasks.length === 0 ? ( //Si es igual a cero el array de taks
-            <h6 className="text-center"> No hay taks aun</h6> 
+            <li className="list-group-item"> No hay taks aun</li> 
           )
           : ( //Si no muestre la lista
             <ul className="list-group">
@@ -101,6 +115,7 @@ function App() {
             onChange={(value)=>{setTask(value.target.value)}} //Aqui le decimos que lo que escriba el usuario se va a almacenar en el state de task
             value={task}
           />
+          {error && <span className="text-danger">{error}</span>}
           <button 
           className={editMode ? "btn btn-warning btn-block" :"btn btn-dark btn-block"}
           type="submit">
