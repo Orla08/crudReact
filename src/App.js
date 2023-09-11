@@ -1,6 +1,6 @@
 import {isEmpty, size} from 'lodash';
-import React, {useState} from "react";
-import shortid from 'shortid';
+import React, {useEffect, useState} from "react";
+import { addDocument, deleteDocument, getCollection, updatetDocument } from './actions';
 
 function App() {
    const [task, setTask] = useState(''); 
@@ -8,6 +8,20 @@ function App() {
    const [id, setId] = useState('');
    const [editMode, setEditMode] = useState(false);
    const [error, setError] = useState(null)
+
+
+  useEffect(() => {
+    (async () => {
+      const result = await getCollection("tasks")
+      if(result.statusResponse){
+        setTasks(result.data)
+      }
+      //console.log(result)
+      //Dentro de result se guardan tres variables, el statusResponde, Data, error, en data esta el array de objetos
+    })()
+  }, [])
+
+
 
 
    const validForm = ()=> {
@@ -23,26 +37,34 @@ function App() {
    }
 
 
-  const addTask = (e) => {
+  const addTask = async (e) => {
     e.preventDefault()
 
     if (!validForm()){ 
       return
     }     
 
-    const newTask = { //Nueva task
-      id : shortid.generate(), //Generamos un id AlfaNumerico
-      name : task, //Tendra un parametro task que sera al igual que el state task
+    const result  =  await addDocument("tasks", { name : task }) //Crea en la base de datos
+    if (!result.statusResponse){
+      setError(result.error)
+      return
     }
-    setTasks([...tasks , newTask]) //El array sera igual a la copia del mismo mas el obejto new taks
+    setTasks([...tasks , {id : result.data.id, name: task}]) //El array sera igual a la copia del mismo mas el obejto new taks
     setTask('');
   }
 
-  const saveTask = (e) => {
+
+  const saveTask = async(e) => {
     e.preventDefault()
     if (!validForm()){ 
       return
-    }   
+    } 
+    
+    const result = await updatetDocument("tasks", id, {name:task}) //Edita en la base de datos
+    if(!result.statusResponse){
+      setError(result.error)
+      return
+    }
 
     const editTasks = tasks.map(item => item.id === id ? {id, name: task} : item)
     //mapeamos el array de taks y preguntamos que si el id es igual al id que se guardo al presionar editar
@@ -54,7 +76,14 @@ function App() {
   }
 
 
-  const eliminar = (id) => {
+  const eliminar = async(id) => {
+
+
+    const result = await deleteDocument("tasks", id) //Aqui elimina de la base de datos
+    if(!result.statusResponse){
+      setError(result.error)
+      return
+    }
     const filterTasks = tasks.filter(task => task.id !==id) //Devuelveme el array de tasks nuevo sin el task que elimine
     setTasks(filterTasks) //Elñ nuevo array de taks es este
   }
